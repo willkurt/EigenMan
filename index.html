@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <title>Eigenman by willkurt</title>
+    <title>EigenMan by willkurt</title>
 
     <link rel="stylesheet" href="stylesheets/styles.css">
     <link rel="stylesheet" href="stylesheets/pygment_trac.css">
@@ -14,51 +14,124 @@
   </head>
   <body>
     <div class="wrapper">
-      <header>
-        <h1>Eigenman</h1>
-        <p>Playing around with megaman sprite and PCA</p>
-
-        <p class="view"><a href="https://github.com/willkurt/EigenMan">View the Project on GitHub <small>willkurt/EigenMan</small></a></p>
 
 
-        <ul>
-          <li><a href="https://github.com/willkurt/EigenMan/zipball/master">Download <strong>ZIP File</strong></a></li>
-          <li><a href="https://github.com/willkurt/EigenMan/tarball/master">Download <strong>TAR Ball</strong></a></li>
-          <li><a href="https://github.com/willkurt/EigenMan">View On <strong>GitHub</strong></a></li>
-        </ul>
-      </header>
-      <section>
-        <h3>Welcome to GitHub Pages.</h3>
+        <h1>Eigen Man</h1>
 
-<p>This automatic page generator is the easiest way to create beautiful pages for all of your projects. Author your page content here using GitHub Flavored Markdown, select a template crafted by a designer, and publish. After your page is generated, you can check out the new branch:</p>
+<image src="https://raw.github.com/willkurt/EigenMan/master/final/eigen_0_large.png">
 
-<pre><code>$ cd your_repo_root/repo_name
-$ git fetch origin
-$ git checkout gh-pages
+        <p>Having fun using Principal Component Analysis and
+        Mega Man!<br>
+by <a href="https://github.com/willkurt">willkurt</a>
+</p>
+
+        <h3>Markov Man and the essence of Mega Man</h3>
+<p>
+For a long time I’ve been fascinated by how much detail is in simple
+sprites from the 8-bit video games I grew up with.  I’d always been
+particularly fond of Mega Man.  A few years back I wanted to see if I
+could figure out a way to computationally capture the essence of what
+all these sprites had in common.  My first experiment was a small
+<a href="http://processing.org/">Processing program</a> I called “Markov Man” which used a <a href="http://en.wikipedia.org/wiki/Markov_chain">Markov chain</a> to generate original Mega Man boss sprite from a corpus of 32x32 boss sprite.</p>
+<image src="./images/markovman.png">
+<p>As you can see the Markov Man experiment lead to some interesting, but pretty incomprehensible output.
+</p>
+
+<h3>Revisiting with computer vision</h3>
+
+<p>
+Over the holiday I was gifted a copy of Programming Computer Vision with Python.  I’ve done a fair bit of data mining/machine learning work the recently but have never really taken the time to learn much in the area of computer vision.  The book starts out with a great discussion on both principal component analysis and simply using the mean of a matrix of flattened images in order to approach the same problem I had looked at years ago.  I also had previously come across work on Eigenfaces and thought it would be fun to apply the same idea to Mega Man sprites.
+</p>
+
+
+
+<h3>Setup and prep</h3>
+<p>
+Like most machine learning tasks, be it nlp or cv, the first thing I was going to need was a corpus of Mega Man sprites.  And just like all interesting data projects, this was the tedious a time consuming part. I started with sprite sheets from Sprites Inc http://www.sprites-inc.co.uk/ and put together a set of around 70 sprites that were roughly centered and were all 32x32 pixels.  Some Mega Man character sprites fit nicely into this space but others require a bit of guessing to find a good place to crop.
+</p>
+
+<image src="https://raw.github.com/willkurt/EigenMan/master/original_sprites/airman.png"><image src="https://raw.github.com/willkurt/EigenMan/master/original_sprites/airman.png">
+
+<p>
+The next step was to automatically convert these images to grayscale
+using the Python Imaging Library (PIL).  This was necessary since the
+color data really ends up adding a lot of noise to what we’re trying
+to discover.  Doing this with PIL was dead simple
+</p>
+
+<pre><code>Image.open(infile).convert('L').save(outfile)
 </code></pre>
 
-<p>If you're using the GitHub for Mac, simply sync your repository and you'll see the new branch.</p>
+<image src="https://raw.github.com/willkurt/EigenMan/master/processed_sprites/airman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/processed_sprites/airman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/processed_sprites/airman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/processed_sprites/airman.png">
 
-<h3>Designer Templates</h3>
+<p>
+The key to processing the images from here on is just to think of a 2 dimensional grayscale picture as a single vector of grayscale values.  Seeing an image as being a 32x32 matrix is essential for humans to understanding what the image is, but from a computational standpoint a single 1024 element vector is the same information.  This allows us to create a single matrix which contains n rows of and 1024 columns (where n is the number of sprites we have).
+</p>
 
-<p>We've crafted some handsome templates for you to use. Go ahead and continue to layouts to browse through them. You can easily go back to edit your page before publishing. After publishing your page, you can revisit the page generator and switch to another theme. Your Page content will be preserved if it remained markdown format.</p>
+<pre><code>for sprite in sprite_files:
+    i = array(Image.open(sprite)).flatten()
+    images.append(i)
 
-<h3>Rather Drive Stick?</h3>
+I = array(images)
+</code></pre>
+<p>
+Using a few basic functions and data structures from Numpy it is very easy to create out matrix of Mega Man sprites.
+</p>
 
-<p>If you prefer to not use the automatic generator, push a branch named <code>gh-pages</code> to your repository to create a page manually. In addition to supporting regular HTML content, GitHub Pages support Jekyll, a simple, blog aware static site generator written by our own Tom Preston-Werner. Jekyll makes it easy to create site-wide headers and footers without having to copy them across every page. It also offers intelligent blog support and other advanced templating features.</p>
+<h3>Principal component analysis and Eigen Man</h3>
 
-<h3>Authors and Contributors</h3>
+<p>
+Okay now that we have a matrix this problem can be treated just like any other machine learning problem! To get the ‘essence’ of all the Mega Man sprites I use Principal Component Analysis (PCA).  The most high level way to understand PCA is that allows us project a higher dimensionality space into a lower one.  What we end up with are ‘Principal Components’ which tell us the fundamental direction of the matrix in decreasing order of importance.  In short, this is exactly what I wanted in the first place, this will provide me with the ‘essence’ of the corpus of megaman sprites.
+</p>
+<pre><code>U,S,V = linalg.svd(I)
+</code></pre>
+<p>
+To perform PCA I’m just using a technique from linear algebra called ‘Singular Value Decomposition’ (SVD).  This operation gives us a bunch of data but what we really care about are the values use in V (which are the eigenvectors of the covariance matrix ordered by their eigenvalues, which is more than you probably want to know if you don’t already understand pca). V is a matrix of our principal components in order or importance.
+</p>
+<pre><code>image_scaled = (abs(V[0]/max(abs(V[0])))*255)
+</code></pre>
+<p>
+We have to do a little trick to coax the principal component into a
+sane image, but once we do we can see what "Eigen Man" looks like
+(scaled up so you can see him better)!
+</p>
+<image src="https://raw.github.com/willkurt/EigenMan/master/final/eigen_0_large.png">
+<p>
+here's what first 4 principal components actually look like:
+</p>
 
-<p>You can <a href="https://github.com/blog/821" class="user-mention">@mention</a> a GitHub username to generate a link to their profile. The resulting <code>&lt;a&gt;</code> element will link to the contributor's GitHub Profile. For example: In 2007, Chris Wanstrath (<a href="https://github.com/defunkt" class="user-mention">@defunkt</a>), PJ Hyett (<a href="https://github.com/pjhyett" class="user-mention">@pjhyett</a>), and Tom Preston-Werner (<a href="https://github.com/mojombo" class="user-mention">@mojombo</a>) founded GitHub.</p>
+<image src="https://raw.github.com/willkurt/EigenMan/master/final/eigen_0.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/final/eigen_1.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/final/eigen_2.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/final/eigen_3.png">
 
-<h3>Support or Contact</h3>
+<p>Clearly as we move away from the first we start to get stranger
+  results, but it's interesting to see what the PCA did to our
+  original matrix of data</p>
 
-<p>Having trouble with Pages? Check out the documentation at <a href="http://help.github.com/pages">http://help.github.com/pages</a> or contact <a href="mailto:support@github.com">support@github.com</a> and we’ll help you sort it out.</p>
-      </section>
-      <footer>
-        <p>This project is maintained by <a href="https://github.com/willkurt">willkurt</a></p>
+<h3>Simpler can be better (or at least just as good)</h3>
+
+<p>
+Of course, while PCA is cool and all, what would have happened if we had done something much simpler and more obvious? For example taking the mean of each row in our matrix:
+</p>
+<pre><code>mean_image = Image.fromarray(reshape(I.mean(axis=0),[m,n]))</code></pre>
+<p>
+Well it turns out that the "Mean Man" is pretty darn close to what we got using PCA
+</p>
+<image src="https://raw.github.com/willkurt/EigenMan/master/final/mean_man_large.png">
+
+<p>
+So perhaps the best take away from this experiment is to always try the simplest solution first and see what you get.  I’ve certain found that to be a surprisingly consistent truth wherever I’ve been doing any machine learning or data mining work.
+</p>
+        <p>This project is maintained
+        by <a href="https://github.com/willkurt">willkurt</a></p>
+  <p><small>"Mega Man" and all associated game sprites are copyright
+  Capcom Co. Ltd</small></p>
         <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
-      </footer>
+
     </div>
     <script src="javascripts/scale.fix.js"></script>
               <script type="text/javascript">
