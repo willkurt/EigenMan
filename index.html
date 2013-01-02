@@ -32,7 +32,7 @@ sprites from the 8-bit video games I grew up with.  I’d always been
 particularly fond of Mega Man.  A few years back I wanted to see if I
 could figure out a way to computationally capture the essence of what
 all these sprites had in common.  My first experiment was a small
-<a href="http://processing.org/">Processing program</a> I called “Markov Man” which used a <a href="http://en.wikipedia.org/wiki/Markov_chain">Markov chain</a> to generate original Mega Man boss sprite from a corpus of 32x32 boss sprite.</p>
+<a href="http://processing.org/">Processing</a> program I called “Markov Man” which used a <a href="http://en.wikipedia.org/wiki/Markov_chain">Markov chain</a> to generate original Mega Man boss sprites from a corpus of 32x32 boss sprites.</p>
 <image src="./images/markovman.png">
 <p>As you can see the Markov Man experiment lead to some interesting, but pretty incomprehensible output.
 </p>
@@ -40,17 +40,50 @@ all these sprites had in common.  My first experiment was a small
 <h3>Revisiting with computer vision</h3>
 
 <p>
-Over the holiday I was gifted a copy of Programming Computer Vision with Python.  I’ve done a fair bit of data mining/machine learning work the recently but have never really taken the time to learn much in the area of computer vision.  The book starts out with a great discussion on both principal component analysis and simply using the mean of a matrix of flattened images in order to approach the same problem I had looked at years ago.  I also had previously come across work on Eigenfaces and thought it would be fun to apply the same idea to Mega Man sprites.
+Over the holiday I was gifted a copy
+of <a href="http://programmingcomputervision.com/">Programming
+    Computer Vision with Python</a>.  I’ve done a fair bit of data
+mining/machine learning work recently but have never really taken the
+time to learn much in the area of computer vision.  The book starts
+out with a great discussion on both principal component analysis and
+simply using the mean of a matrix of flattened images in order to
+approach the same problem I had looked at years ago.  I also had
+previously come across work on <a href="http://en.wikipedia.org/wiki/Eigenface">Eigenfaces</a> and thought it would be fun to apply the same idea to Mega Man sprites.
 </p>
 
 
 
 <h3>Setup and prep</h3>
 <p>
-Like most machine learning tasks, be it nlp or cv, the first thing I was going to need was a corpus of Mega Man sprites.  And just like all interesting data projects, this was the tedious a time consuming part. I started with sprite sheets from Sprites Inc http://www.sprites-inc.co.uk/ and put together a set of around 70 sprites that were roughly centered and were all 32x32 pixels.  Some Mega Man character sprites fit nicely into this space but others require a bit of guessing to find a good place to crop.
+Like most machine learning tasks, be it nlp or cv, the first thing I
+was going to need was a corpus of Mega Man sprites.  And just like all
+interesting data projects, this was the tedious a time consuming
+part. I started with sprite sheets from <a href="http://www.sprites-inc.co.uk/">Sprites Inc</a> and put together a set of around 70 sprites that were roughly centered and were all 32x32 pixels.  Some Mega Man character sprites fit nicely into this space but others require a bit of guessing to find a good place to crop.
 </p>
 
-<image src="https://raw.github.com/willkurt/EigenMan/master/original_sprites/airman.png"><image src="https://raw.github.com/willkurt/EigenMan/master/original_sprites/airman.png">
+
+
+<image src="https://raw.github.com/willkurt/EigenMan/master/original_sprites/airman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/original_sprites/blademan.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/original_sprites/bombman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/original_sprites/brightman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/original_sprites/bubbleman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/original_sprites/chargeman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/original_sprites/chillman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/original_sprites/commandoman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/original_sprites/concreteman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/original_sprites/crashman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/original_sprites/crystalman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/original_sprites/cutsman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/original_sprites/diveman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/original_sprites/drillman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/original_sprites/duo.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/original_sprites/dustman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/original_sprites/elecman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/original_sprites/fireman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/original_sprites/flashman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/original_sprites/galaxyman.png">
+
 
 <p>
 The next step was to automatically convert these images to grayscale
@@ -63,9 +96,25 @@ to discover.  Doing this with PIL was dead simple
 </code></pre>
 
 <image src="https://raw.github.com/willkurt/EigenMan/master/processed_sprites/airman.png">
-<image src="https://raw.github.com/willkurt/EigenMan/master/processed_sprites/airman.png">
-<image src="https://raw.github.com/willkurt/EigenMan/master/processed_sprites/airman.png">
-<image src="https://raw.github.com/willkurt/EigenMan/master/processed_sprites/airman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/processed_sprites/blademan.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/processed_sprites/bombman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/processed_sprites/brightman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/processed_sprites/bubbleman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/processed_sprites/chargeman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/processed_sprites/chillman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/processed_sprites/commandoman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/processed_sprites/concreteman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/processed_sprites/crashman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/processed_sprites/crystalman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/processed_sprites/cutsman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/processed_sprites/diveman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/processed_sprites/drillman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/processed_sprites/duo.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/processed_sprites/dustman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/processed_sprites/elecman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/processed_sprites/fireman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/processed_sprites/flashman.png">
+<image src="https://raw.github.com/willkurt/EigenMan/master/processed_sprites/galaxyman.png">
 
 <p>
 The key to processing the images from here on is just to think of a 2 dimensional grayscale picture as a single vector of grayscale values.  Seeing an image as being a 32x32 matrix is essential for humans to understanding what the image is, but from a computational standpoint a single 1024 element vector is the same information.  This allows us to create a single matrix which contains n rows of and 1024 columns (where n is the number of sprites we have).
@@ -78,18 +127,21 @@ The key to processing the images from here on is just to think of a 2 dimensiona
 I = array(images)
 </code></pre>
 <p>
-Using a few basic functions and data structures from Numpy it is very easy to create out matrix of Mega Man sprites.
+Using a few basic functions and data structures from Numpy it is very easy to create our matrix of Mega Man sprites.
 </p>
 
 <h3>Principal component analysis and Eigen Man</h3>
 
 <p>
-Okay now that we have a matrix this problem can be treated just like any other machine learning problem! To get the ‘essence’ of all the Mega Man sprites I use Principal Component Analysis (PCA).  The most high level way to understand PCA is that allows us project a higher dimensionality space into a lower one.  What we end up with are ‘Principal Components’ which tell us the fundamental direction of the matrix in decreasing order of importance.  In short, this is exactly what I wanted in the first place, this will provide me with the ‘essence’ of the corpus of megaman sprites.
+Okay now that we have a matrix this problem can be treated just like
+any other machine learning problem! To get the ‘essence’ of all the
+Mega Man sprites I use Principal Component Analysis (PCA).  The most
+high level way to understand PCA is that it allows us to project a higher dimensionality space into a lower one.  What we end up with are ‘Principal Components’ which tell us the fundamental directions of the matrix in decreasing order of importance.  In short, this is exactly what I wanted in the first place, this will provide me with the ‘essence’ of the corpus of megaman sprites.
 </p>
 <pre><code>U,S,V = linalg.svd(I)
 </code></pre>
 <p>
-To perform PCA I’m just using a technique from linear algebra called ‘Singular Value Decomposition’ (SVD).  This operation gives us a bunch of data but what we really care about are the values use in V (which are the eigenvectors of the covariance matrix ordered by their eigenvalues, which is more than you probably want to know if you don’t already understand pca). V is a matrix of our principal components in order or importance.
+To perform PCA I’m just using a technique from linear algebra called ‘Singular Value Decomposition’ (SVD).  This operation gives us a bunch of data but what we really care about are the values in V (which are the eigenvectors of the covariance matrix ordered by their eigenvalues, which is more than you probably want to know if you don’t already understand pca). V is a matrix of our principal components in order or importance.
 </p>
 <pre><code>image_scaled = (abs(V[0]/max(abs(V[0])))*255)
 </code></pre>
@@ -110,7 +162,7 @@ here's what first 4 principal components actually look like:
 
 <p>Clearly as we move away from the first we start to get stranger
   results, but it's interesting to see what the PCA did to our
-  original matrix of data</p>
+  original matrix of data.</p>
 
 <h3>Simpler can be better (or at least just as good)</h3>
 
@@ -126,8 +178,18 @@ Well it turns out that the "Mean Man" is pretty darn close to what we got using 
 <p>
 So perhaps the best take away from this experiment is to always try the simplest solution first and see what you get.  I’ve certain found that to be a surprisingly consistent truth wherever I’ve been doing any machine learning or data mining work.
 </p>
+
+<h3>Improvement?</h3>
+<p>
+I just wanted to make a note that the best way to improve this would
+be to be more selective about about how the sprites were aligned.  For
+example, it is clear that I aligned the feet more closely than the
+face. Playing with the sprite alignment would be the best way to get a
+better Eigen Man.
+<p>
         <p>This project is maintained
         by <a href="https://github.com/willkurt">willkurt</a></p>
+<p>twitter: <a href="https://twitter.com/willkurt">@willkurt</a></p>
   <p><small>"Mega Man" and all associated game sprites are copyright
   Capcom Co. Ltd</small></p>
         <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
